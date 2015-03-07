@@ -1,6 +1,7 @@
 #ifndef EUREXMODULE_H
 #define EUREXMODULE_H
 
+#include <memory>
 #include <iostream>
 
 #include "types.h"
@@ -49,8 +50,8 @@ public:
 
     // create eml server
     mEmlServer.reset(new EmlServer<decltype(insertFunction)>(*this, insertFunction));
-
   }
+
   // IExecModule
   IEmlServer& GetEmlServer() override
   {
