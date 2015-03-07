@@ -1,6 +1,8 @@
 #ifndef EUREXMODULE_H
 #define EUREXMODULE_H
 
+#include <iostream>
+
 #include "types.h"
 #include "emlServer.h"
 
@@ -12,40 +14,49 @@ private:
   IExecModuleOrderHandler* mExecModuleOrderHandler;
 
   // never called directly, only by framework
-  void SendInsertToMarket(int volume, double price, bool side)
+  void SendInsertToMarket(IEmlServer&, int volume, double price, bool side)
   {
-    // TCP send
+    std::cout << volume << "@" << price << " " << side << std::endl;
+  }
+
+  // IExecModule
+  void Initialise(IExecModuleOrderHandler* execModuleOrderHandler, IRiskChecker* riskChecker) override
+  {
+    mRiskChecker = riskChecker;
+    mExecModuleOrderHandler = execModuleOrderHandler;
+  }
+
+  // IExecModule
+  void InsertOrder(int volume, double price, int tag, bool side) override
+  {
+    // order looks good, ask framework to check (expect callback on success)
+    if (!mRiskChecker->CheckInsertOrder(volume, price, tag, side))
+    {
+      // order insert failed
+      mExecModuleOrderHandler->OnOrderError(tag);
+    }
   }
 
 public:
 
   EurexModule()
   {
-    auto fn = [this](int volume, double price, bool side) { SendInsertToMarket(volume, price, side);};
-    auto b = new EmlServer<decltype(fn)>(*this, fn);
-    mEmlServer.reset(b);
-  }
+    // set up handlers
+    auto insertFunction = [this](IEmlServer& caller, int volume, double price, bool side)
+    {
+      SendInsertToMarket(caller, volume, price, side);
+    };
 
+    // create eml server
+    mEmlServer.reset(new EmlServer<decltype(insertFunction)>(*this, insertFunction));
+
+  }
+  // IExecModule
   IEmlServer& GetEmlServer() override
   {
     return *mEmlServer.get();
   }
 
-  void Initialise(IExecModuleOrderHandler* execModuleOrderHandler, IRiskChecker* riskChecker) override
-  {
-    mRiskChecker = riskChecker;
-    mExecModuleOrderHandler =execModuleOrderHandler;
-    mExecModuleOrderHandler->RegisterOrderInserter([this](int volume, double price, bool side) { SendInsertToMarket(volume, price, side);});
-  }
-
-  void InsertOrder(int volume, double price, int tag, bool side) override
-  {
-    // order looks good, ask framework to check (expect callback on success)
-    if (!mRiskChecker->CheckInsertOrder(volume, price, tag, side))
-    {
-      mExecModuleOrderHandler->OnOrderError(tag);
-    }
-  }
 };
 
 #endif // EUREXMODULE_H

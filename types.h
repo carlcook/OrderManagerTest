@@ -20,7 +20,6 @@ class IExecModuleOrderHandler
 public:
   ~IExecModuleOrderHandler() = default;
   virtual void OnOrderError(int tag) = 0;
-  virtual void RegisterOrderInserter(std::function<void(int, double, bool)> orderInserter) = 0;
 };
 
 class IExecModule

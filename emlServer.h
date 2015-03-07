@@ -1,29 +1,30 @@
 #ifndef EMLSERVER_H
 #define EMLSERVER_H
 
+#include <iostream>
+
 #include "types.h"
 
-template<typename H>
+template<typename InsertHandler>
 class EmlServer : private IRiskChecker, private IExecModuleOrderHandler, public IEmlServer
 {
 private:
   IExecModule& mExecModule;
-  std::function<void(int, double, bool)> mOrderInserter;
-  std::map<int, bool> mCallbacks;
-  H mHandler;
-
-  bool CheckLimits(int volume, double price, int tag, bool side)
-  {
-    return true;
-  }
+  std::map<int, bool> mTagToCallbacks;
+  InsertHandler mOrderInsertHandler;
 
   // IRiskChecker
   bool CheckInsertOrder(int volume, double price, int tag, bool side) override
   {
-    if (CheckLimits(volume, price, tag, side))
+    // record that we received a callback for this tag
+    mTagToCallbacks[tag] = true;
+
+    // do the limit checks
+    if (CheckLimits(volume, price))
     {
-      mHandler(volume, price, side);
-      mOrderInserter(volume, price, side);
+      // now call the module's inserter
+      // TODO what about passing extra data?
+      mOrderInsertHandler(*this, volume, price, side);
       return true;
     }
     return false;
@@ -32,34 +33,37 @@ private:
   // IExecModuleOrderHandler
   void OnOrderError(int tag) override
   {
-    // TODO log etc
-    tag = 0;
+    std::cout << tag << ": order error" << std::endl;
   }
 
-  void RegisterOrderInserter(std::function<void (int, double, bool)> orderInserter)
+  // useful private methods
+  bool CheckLimits(int volume, double price)
   {
-    mOrderInserter = orderInserter;
+    return volume < 1000 && price < 100;
   }
 
   void CheckCallback(int tag)
   {
-    if (!mCallbacks[tag])
+    if (!mTagToCallbacks[tag])
       throw "Risk callback did not happen";
   }
 
 public:
-  EmlServer(IExecModule& execModule, H handler)
+  EmlServer(IExecModule& execModule, InsertHandler handler)
     : mExecModule(execModule),
-      mHandler(handler)
+      mOrderInsertHandler(handler)
   {
+    // pass the module the required objects
     mExecModule.Initialise(this, this);
   }
 
   // IEmlServer
   void InsertOrder(int volume, double price, int tag, bool side)
   {
-    mCallbacks[tag] = true;
+    // ask the module to insert the order, resulting in a risk callback
     mExecModule.InsertOrder(volume, price, tag, side);
+
+    // verify that the callback happened
     CheckCallback(tag);
   }
 };

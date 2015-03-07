@@ -6,14 +6,14 @@
 
 int main()
 {
-	std::unique_ptr<EurexModule> eurexModule(new EurexModule());
-	auto& emlServer = eurexModule->GetEmlServer();
+	EurexModule eurexModule;
+	auto& emlServer = eurexModule.GetEmlServer();
 	emlServer.InsertOrder(10, 12.2, 1, true);
+	emlServer.InsertOrder(10, 12.2, 2, true);
+	emlServer.InsertOrder(10, 12.2, 3, true);
+	emlServer.InsertOrder(10, 12.2, 4, true);
 }
 
-// TODO can we turn this into templates instead of lambdas?
-// TODO order class
-// TODO token to check that RG has been called from module
-// TODO token to check that we have been called by EML server callback?
-// TODO variadic template arguments
-// TODO use std::move instead of copies
+// TODO order class?
+// TODO variadic template arguments? Needed?
+// TODO use std::move instead of copies (or is this not required?)
