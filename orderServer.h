@@ -6,7 +6,7 @@
 #include "types.h"
 
 template<typename InsertHandler>
-class OrderServer : private IOrderChecker, private IMarketModuleResponseHandler, public IOrderServer
+class OrderServer : private IOrderExecutor, private IMarketModuleResponseHandler, public IOrderServer
 {
 private:
   IMarketModule& mMarketModule;
@@ -14,8 +14,8 @@ private:
   InsertHandler mOrderInsertHandler;
   AccessKey mAccessKey;
 
-  // IOrderChecker
-  bool CheckInsertOrder(InsertArgs args, int tag) override;
+  // IOrderExecutor
+  bool AttemptInsertOrder(InsertArgs args, int tag) override;
 
   // IExecModuleOrderHandler
   void OnOrderError(int tag) override;

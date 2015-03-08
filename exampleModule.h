@@ -10,15 +10,15 @@
 class ExampleModule : public IMarketModule
 {
 private:
-  // we own the EML server
+  // we own the order server
   std::unique_ptr<IOrderServer> mOrderServer;
 
   // required interface instances
-  IOrderChecker* mOrderChecker;
+  IOrderExecutor* mOrderExecutor;
   IMarketModuleResponseHandler* mMarketModuleResponseHandler;
 
   // IExecModule
-  void Initialise(IMarketModuleResponseHandler*, IOrderChecker*) override;
+  void Initialise(IMarketModuleResponseHandler*, IOrderExecutor*) override;
   void InsertOrder(int volume, double price, int tag, bool side) override;
   IOrderServer& GetOrderServer() override;
 
@@ -30,7 +30,7 @@ public:
   ExampleModule();
 
 // give SetupHandlers method private access (makes life easier)
-template <typename Module> friend void SetupHandlers(Module*);
+template <typename Module> friend void SetupOrderHandlers(Module*);
 };
 
 #endif // EUREXMODULE_H

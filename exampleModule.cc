@@ -6,21 +6,21 @@
 // compilation errors due to private scope.
 // This is where you can instantiate the OrderServer, with the correct callable
 // methods (handlers).
-template <typename Module> static void SetupHandlers(Module* module)
+template <typename MarketModule> static void SetupOrderHandlers(MarketModule* marketModule)
 {
     // set up handlers
-    auto insertHandler = [module](AccessKey accessKey, InsertArgs args)
+    auto insertHandler = [marketModule](AccessKey accessKey, InsertArgs args)
     {
-      module->SendInsertToMarket(accessKey, args);
+      marketModule->SendInsertToMarket(accessKey, args);
     };
 
-    // create eml server
-    module->mOrderServer.reset(new OrderServer<decltype(insertHandler)>(*module, insertHandler));
+    // create order server
+    marketModule->mOrderServer.reset(new OrderServer<decltype(insertHandler)>(*marketModule, insertHandler));
 }
 
-void ExampleModule::Initialise(IMarketModuleResponseHandler* execModuleOrderHandler, IOrderChecker* orderChecker)
+void ExampleModule::Initialise(IMarketModuleResponseHandler* execModuleOrderHandler, IOrderExecutor* orderExecutor)
 {
-  mOrderChecker = orderChecker;
+  mOrderExecutor = orderExecutor;
   mMarketModuleResponseHandler = execModuleOrderHandler;
 }
 
@@ -28,7 +28,7 @@ void ExampleModule::InsertOrder(int volume, double price, int tag, bool side)
 {
   // order looks good, ask framework to check (expect callback on success)
   InsertArgs args { volume, price, side, nullptr };
-  if (!mOrderChecker->CheckInsertOrder(args, tag))
+  if (!mOrderExecutor->AttemptInsertOrder(args, tag))
     {
       // order insert failed
       mMarketModuleResponseHandler->OnOrderError(tag);
@@ -48,5 +48,5 @@ IOrderServer& ExampleModule::GetOrderServer()
 
 ExampleModule::ExampleModule()
 {
-  SetupHandlers(this);
+  SetupOrderHandlers(this);
 }

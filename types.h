@@ -19,11 +19,11 @@ struct InsertArgs
 };
 
 // A component to check orders before sending them to the market
-class IOrderChecker
+class IOrderExecutor
 {
 public:
-  virtual ~IOrderChecker() = default;
-  virtual bool CheckInsertOrder(InsertArgs, int tag) = 0;
+  virtual ~IOrderExecutor() = default;
+  virtual bool AttemptInsertOrder(InsertArgs, int tag) = 0;
 };
 
 // A component to handle responses from market modules
@@ -40,7 +40,7 @@ class IMarketModule
 public:
   virtual ~IMarketModule() = default;
   virtual IOrderServer& GetOrderServer() = 0;
-  virtual void Initialise(IMarketModuleResponseHandler*, IOrderChecker*) = 0;
+  virtual void Initialise(IMarketModuleResponseHandler*, IOrderExecutor*) = 0;
   virtual void InsertOrder(int volume, double price, int tag, bool side) = 0;
 };
 
@@ -49,8 +49,8 @@ class AccessKey   {
 private:
   AccessKey() = default;
   AccessKey(const AccessKey&) = default;
-  template<typename Module> friend void SetupHandlers(Module*); // let handler setup have access
-  template<typename Module> friend class OrderServer; // let server have access
+  template<typename MarketModule> friend void SetupOrderHandlers(MarketModule*); // let handler setup function have access
+  template<typename MarketModule> friend class OrderServer; // let server have access
 };
 
 #endif // TYPES_H

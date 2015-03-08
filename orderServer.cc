@@ -10,7 +10,7 @@ OrderServer<InsertHandler>::OrderServer(IMarketModule& marketModule, InsertHandl
 }
 
 template <typename InsertHandler>
-bool OrderServer<InsertHandler>::CheckInsertOrder(InsertArgs args, int tag)
+bool OrderServer<InsertHandler>::AttemptInsertOrder(InsertArgs args, int tag)
 {
   // record that we received a callback for this tag
   mOrderTagToCallbacks[tag] = true;
@@ -53,6 +53,8 @@ void OrderServer<InsertArgs>::InsertOrder(int volume, double price, int tag, boo
 
   // verify that the callback happened
   VerifyCallback(tag);
+
+  // TODO what about calls to CheckOrderInsert that are unsolicited?
 }
 
 #endif
