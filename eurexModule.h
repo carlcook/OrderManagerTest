@@ -10,54 +10,27 @@
 class EurexModule : public IExecModule
 {
 private:
+  // we own the EML server
   std::unique_ptr<IEmlServer> mEmlServer;
-  IRiskChecker* mRiskChecker;
+
+  // required interface instances
+  IOrderChecker* mOrderChecker;
   IExecModuleOrderHandler* mExecModuleOrderHandler;
 
-  // never called directly, only by framework
-  void SendInsertToMarket(IEmlServer&, int volume, double price, bool side)
-  {
-    std::cout << volume << "@" << price << " " << side << std::endl;
-  }
-
   // IExecModule
-  void Initialise(IExecModuleOrderHandler* execModuleOrderHandler, IRiskChecker* riskChecker) override
-  {
-    mRiskChecker = riskChecker;
-    mExecModuleOrderHandler = execModuleOrderHandler;
-  }
+  void Initialise(IExecModuleOrderHandler* execModuleOrderHandler, IOrderChecker* orderChecker) override;
+  void InsertOrder(int volume, double price, int tag, bool side) override;
+  IEmlServer& GetEmlServer() override;
 
-  // IExecModule
-  void InsertOrder(int volume, double price, int tag, bool side) override
-  {
-    // order looks good, ask framework to check (expect callback on success)
-    if (!mRiskChecker->CheckInsertOrder(volume, price, tag, side))
-    {
-      // order insert failed
-      mExecModuleOrderHandler->OnOrderError(tag);
-    }
-  }
+  // Handles for order operations. Can only be called by framework,
+  // as Key is impossible to instantiate
+  void SendInsertToMarket(AccessKey, InsertArgs args);
 
 public:
+  EurexModule();
 
-  EurexModule()
-  {
-    // set up handlers
-    auto insertFunction = [this](IEmlServer& caller, int volume, double price, bool side)
-    {
-      SendInsertToMarket(caller, volume, price, side);
-    };
-
-    // create eml server
-    mEmlServer.reset(new EmlServer<decltype(insertFunction)>(*this, insertFunction));
-  }
-
-  // IExecModule
-  IEmlServer& GetEmlServer() override
-  {
-    return *mEmlServer.get();
-  }
-
+// give SetupHandlers method private access (makes life easier)
+template <typename Module> friend void SetupHandlers(Module*);
 };
 
 #endif // EUREXMODULE_H
