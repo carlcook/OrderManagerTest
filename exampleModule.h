@@ -5,29 +5,29 @@
 #include <iostream>
 
 #include "types.h"
-#include "emlServer.h"
+#include "orderServer.h"
 
-class EurexModule : public IExecModule
+class ExampleModule : public IMarketModule
 {
 private:
   // we own the EML server
-  std::unique_ptr<IEmlServer> mEmlServer;
+  std::unique_ptr<IOrderServer> mOrderServer;
 
   // required interface instances
   IOrderChecker* mOrderChecker;
-  IExecModuleOrderHandler* mExecModuleOrderHandler;
+  IMarketModuleResponseHandler* mMarketModuleResponseHandler;
 
   // IExecModule
-  void Initialise(IExecModuleOrderHandler* execModuleOrderHandler, IOrderChecker* orderChecker) override;
+  void Initialise(IMarketModuleResponseHandler*, IOrderChecker*) override;
   void InsertOrder(int volume, double price, int tag, bool side) override;
-  IEmlServer& GetEmlServer() override;
+  IOrderServer& GetOrderServer() override;
 
   // Handles for order operations. Can only be called by framework,
   // as Key is impossible to instantiate
   void SendInsertToMarket(AccessKey, InsertArgs args);
 
 public:
-  EurexModule();
+  ExampleModule();
 
 // give SetupHandlers method private access (makes life easier)
 template <typename Module> friend void SetupHandlers(Module*);

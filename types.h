@@ -1,20 +1,24 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-class IEmlServer
+// A server can insert orders, from the client's perspective
+class IOrderServer
 {
 public:
-  virtual ~IEmlServer() = default;
+  virtual ~IOrderServer() = default;
   virtual void InsertOrder(int volume, double price, int tag, bool side) = 0;
 };
 
+// Common arguments when inserting orders
 struct InsertArgs
 {
-  const int& volume;
-  const double& price;
-  const bool& side;
+  const int& mVolume;
+  const double& mPrice;
+  const bool& mSide;
+  const void* mData;
 };
 
+// A component to check orders before sending them to the market
 class IOrderChecker
 {
 public:
@@ -22,19 +26,21 @@ public:
   virtual bool CheckInsertOrder(InsertArgs, int tag) = 0;
 };
 
-class IExecModuleOrderHandler
+// A component to handle responses from market modules
+class IMarketModuleResponseHandler
 {
 public:
-  virtual ~IExecModuleOrderHandler() = default;
+  virtual ~IMarketModuleResponseHandler() = default;
   virtual void OnOrderError(int tag) = 0;
 };
 
-class IExecModule
+// A market module sends orders to the market
+class IMarketModule
 {
 public:
-  virtual ~IExecModule() = default;
-  virtual IEmlServer& GetEmlServer() = 0;
-  virtual void Initialise(IExecModuleOrderHandler*, IOrderChecker*) = 0;
+  virtual ~IMarketModule() = default;
+  virtual IOrderServer& GetOrderServer() = 0;
+  virtual void Initialise(IMarketModuleResponseHandler*, IOrderChecker*) = 0;
   virtual void InsertOrder(int volume, double price, int tag, bool side) = 0;
 };
 
@@ -44,8 +50,7 @@ private:
   AccessKey() = default;
   AccessKey(const AccessKey&) = default;
   template<typename Module> friend void SetupHandlers(Module*); // let handler setup have access
-  template<typename Module> friend class EmlServer; // let server have access
+  template<typename Module> friend class OrderServer; // let server have access
 };
-
 
 #endif // TYPES_H

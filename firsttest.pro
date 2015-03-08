@@ -15,13 +15,11 @@ CONFIG   += c++11
 
 TEMPLATE = app
 
-
 SOURCES += \
-    eurexModule.cc \
-    emlServer.cc \
-    main.cc
+    main.cc \
+    exampleModule.cc
 
 HEADERS += \
     types.h \
-    eurexModule.h \
-    emlServer.h
+    exampleModule.h \
+    orderServer.h

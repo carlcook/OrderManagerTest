@@ -1,16 +1,16 @@
-#ifndef EMLSERVER_H
-#define EMLSERVER_H
+#ifndef ORDERSERVER_H
+#define ORDERSERVER_H
 
 #include <map>
 
 #include "types.h"
 
 template<typename InsertHandler>
-class EmlServer : private IOrderChecker, private IExecModuleOrderHandler, public IEmlServer
+class OrderServer : private IOrderChecker, private IMarketModuleResponseHandler, public IOrderServer
 {
 private:
-  IExecModule& mExecModule;
-  std::map<int, bool> mTagToCallbacks;
+  IMarketModule& mMarketModule;
+  std::map<int, bool> mOrderTagToCallbacks;
   InsertHandler mOrderInsertHandler;
   AccessKey mKey;
 
@@ -20,17 +20,18 @@ private:
   // IExecModuleOrderHandler
   void OnOrderError(int tag) override;
 
-  // IEmlServer
+  // IOrderServer
   void InsertOrder(int volume, double price, int tag, bool side);
 
   // useful private methods
   bool CheckLimits(int volume, double price);
-  void CheckCallback(int tag);
+  void VerifyCallback(int tag);
 
 public:
-  EmlServer(IExecModule& execModule, InsertHandler handler);
+  OrderServer(IMarketModule& execModule, InsertHandler handler);
 };
 
-#include "emlServer.cc"
+// pull in the template implementation
+#include "orderServer.cc"
 
-#endif // EMLSERVER_H
+#endif // ORDERSERVER_H
