@@ -15,7 +15,7 @@ struct InsertArgs
   const int& mVolume;
   const double& mPrice;
   const bool& mSide;
-  const void* mData;
+  const void* mData; // any opaque data
 };
 
 // A component to check orders before sending them to the market
@@ -44,7 +44,7 @@ public:
   virtual void InsertOrder(int volume, double price, int tag, bool side) = 0;
 };
 
-// The "key passing idiom", with friend access to templated types
+// Implementation of the "key passing idiom", with friend access to templated types
 class AccessKey   {
 private:
   AccessKey() = default;

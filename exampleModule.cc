@@ -9,9 +9,9 @@
 template <typename Module> static void SetupHandlers(Module* module)
 {
     // set up handlers
-    auto insertHandler = [module](AccessKey key, InsertArgs args)
+    auto insertHandler = [module](AccessKey accessKey, InsertArgs args)
     {
-      module->SendInsertToMarket(key, args);
+      module->SendInsertToMarket(accessKey, args);
     };
 
     // create eml server

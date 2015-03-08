@@ -18,8 +18,8 @@ bool OrderServer<InsertHandler>::CheckInsertOrder(InsertArgs args, int tag)
   // do the limit checks
   if (CheckLimits(args.mVolume, args.mPrice))
   {
-    // call the module's inserter
-    mOrderInsertHandler(mKey, args);
+    // call the module's inserter (using the only instance of the access key)
+    mOrderInsertHandler(mAccessKey, args);
     return true;
   }
   return false;

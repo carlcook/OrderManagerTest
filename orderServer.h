@@ -12,7 +12,7 @@ private:
   IMarketModule& mMarketModule;
   std::map<int, bool> mOrderTagToCallbacks;
   InsertHandler mOrderInsertHandler;
-  AccessKey mKey;
+  AccessKey mAccessKey;
 
   // IOrderChecker
   bool CheckInsertOrder(InsertArgs args, int tag) override;
