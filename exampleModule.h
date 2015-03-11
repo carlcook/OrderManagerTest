@@ -1,5 +1,5 @@
-#ifndef EUREXMODULE_H
-#define EUREXMODULE_H
+#ifndef EXAMPLEMODULE_H
+#define EXAMPLEMODULE_H
 
 #include <memory>
 #include <iostream>
@@ -33,4 +33,4 @@ public:
 template <typename Module> friend void SetupOrderHandlers(Module*);
 };
 
-#endif // EUREXMODULE_H
+#endif // EXAMPLEMODULE_H
