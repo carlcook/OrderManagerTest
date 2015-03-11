@@ -12,7 +12,7 @@
 template <typename MarketModule> static void SetupOrderHandlers(MarketModule* marketModule)
 {
     // set up handlers
-    auto insertHandler = [marketModule](AccessKey accessKey, InsertArgs args)
+    auto insertHandler = [marketModule](AccessKey accessKey, const InsertArgs& args)
     {
       marketModule->SendInsertToMarket(accessKey, args);
     };
@@ -32,32 +32,33 @@ void ExampleModule::Initialise(IMarketModuleResponseHandler* execModuleOrderHand
   mMarketModuleResponseHandler = execModuleOrderHandler;
 }
 
-// TODO pass the message data as a templated type to avoid casts?
-struct MessageData
+IOrderServer& ExampleModule::GetOrderServer()
 {
-  int mId = 0;
-  std::string mMessage = "";
-};
+  return *mOrderServer.get();
+}
 
 void ExampleModule::InsertOrder(int volume, double price, int tag, bool side)
 {
-  // order looks good, ask framework to check (expect callback to message handler on success)
-  MessageData messageData;
-  messageData.mId = 1;
-  messageData.mMessage = "GET / HTTP/1.1\r\nHost: www.google.nl\r\n\r\n";
-  InsertArgs args { volume, price, side, &messageData };
-  if (!mOrderExecutor->AttemptInsertOrder(args, tag))
+  // check params
+  if (volume == 0)
+    return; // and probably error
+
+  // order looks good, ask framework to check (expect callback to message handler on success), and
+  // note that we have sent custom data along for the ride
+  std::string message = "GET / HTTP/1.1\r\nHost: www.google.nl\r\n\r\n";
+  ExtendedInsertArgs insertArgs(volume, price, side, 1, message);
+  if (!mOrderExecutor->AttemptInsertOrder(insertArgs, tag))
     {
       // order insert failed
       mMarketModuleResponseHandler->OnOrderError(tag);
     }
 }
 
-// this is only called by the framework, it's impossible to call directly
-void ExampleModule::SendInsertToMarket(AccessKey, InsertArgs args)
+// this is only called by the framework, it's impossible to call directly without deliberate hacking
+// NOTE: just serialisation code (in this case, just send a request to google)
+void ExampleModule::SendInsertToMarket(AccessKey, const InsertArgs& args)
 {
-  // NOTE: just serialisation code
-  std::cout << args.mVolume << "@" << args.mPrice << " " << args.mSide << std::endl;
+  // connect to the remote server
   using boost::asio::ip::tcp;
   boost::asio::io_service io_service;
   tcp::resolver resolver(io_service);
@@ -74,21 +75,16 @@ void ExampleModule::SendInsertToMarket(AccessKey, InsertArgs args)
   if (error)
     throw boost::system::system_error(error);
 
-  auto messageData = static_cast<const MessageData*>(args.mData);
-
-  std::string message = messageData->mMessage;
+  // transmit the data
+  auto extendedArgs = static_cast<const ExtendedInsertArgs&>(args);
+  std::string message = extendedArgs.mMessage;
   boost::system::error_code ignored_error;
   boost::asio::write(socket, boost::asio::buffer(message), boost::asio::transfer_all(), ignored_error);
 
-  boost::array<char, 128> buf;
+  // just out of interest, see what response we received from google
+  boost::array<char, 2048> buf;
   size_t len = socket.read_some(boost::asio::buffer(buf), error);
-
   if (error && error != boost::asio::error::eof)
      throw boost::system::system_error(error); // Some other error.
   std::cout.write(buf.data(), len) << std::endl;
-}
-
-IOrderServer& ExampleModule::GetOrderServer()
-{
-  return *mOrderServer.get();
 }

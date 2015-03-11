@@ -24,7 +24,20 @@ private:
 
   // Handles for order operations. Can only be called by framework,
   // as Key is impossible to instantiate
-  void SendInsertToMarket(AccessKey, InsertArgs args);
+  void SendInsertToMarket(AccessKey, const InsertArgs &args);
+
+  // Extension data for order inserts
+  struct ExtendedInsertArgs : public InsertArgs
+  {
+    ExtendedInsertArgs(const int& volume, const double& price, const bool& side, const int& id, const std::string& message)
+      : InsertArgs({volume, price, side}),
+        mId(id), mMessage(message)
+    {
+    }
+
+    const int& mId;
+    const std::string& mMessage;
+  };
 
 public:
   ExampleModule();

@@ -5,6 +5,10 @@
 
 #include "types.h"
 
+// some comments:
+// * Get rid of all the interfaces
+// * Maybe have one handler per order operation type, stored as a static template type per method?
+
 template<typename InsertHandler>
 class OrderServer : private IOrderExecutor, private IMarketModuleResponseHandler, public IOrderServer
 {
@@ -15,7 +19,7 @@ private:
   AccessKey mAccessKey;
 
   // IOrderExecutor
-  bool AttemptInsertOrder(InsertArgs args, int tag) override;
+  bool AttemptInsertOrder(const InsertArgs& args, int tag) override;
 
   // IExecModuleOrderHandler
   void OnOrderError(int tag) override;

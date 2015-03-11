@@ -15,7 +15,6 @@ struct InsertArgs
   const int& mVolume;
   const double& mPrice;
   const bool& mSide;
-  const void* mData; // any opaque data
 };
 
 // A component to check orders before sending them to the market
@@ -23,7 +22,7 @@ class IOrderExecutor
 {
 public:
   virtual ~IOrderExecutor() = default;
-  virtual bool AttemptInsertOrder(InsertArgs, int tag) = 0;
+  virtual bool AttemptInsertOrder(const InsertArgs&, int tag) = 0;
 };
 
 // A component to handle responses from market modules
@@ -50,7 +49,7 @@ private:
   AccessKey() = default;
   AccessKey(const AccessKey&) = default;
   template<typename MarketModule> friend void SetupOrderHandlers(MarketModule*); // let handler setup function have access
-  template<typename MarketModule> friend class OrderServer; // let server have access
+  template<typename InsertHandler> friend class OrderServer; // let server have access
 };
 
 #endif // TYPES_H

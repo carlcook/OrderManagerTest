@@ -10,7 +10,7 @@ OrderServer<InsertHandler>::OrderServer(IMarketModule& marketModule, InsertHandl
 }
 
 template <typename InsertHandler>
-bool OrderServer<InsertHandler>::AttemptInsertOrder(InsertArgs args, int tag)
+bool OrderServer<InsertHandler>::AttemptInsertOrder(const InsertArgs& args, int tag)
 {
   // record that we received a callback for this tag
   mOrderTagToCallbacks[tag] = true;
@@ -25,28 +25,28 @@ bool OrderServer<InsertHandler>::AttemptInsertOrder(InsertArgs args, int tag)
   return false;
 }
 
-template <typename InsertArgs>
-void OrderServer<InsertArgs>::OnOrderError(int tag)
+template <typename InsertHandler>
+void OrderServer<InsertHandler>::OnOrderError(int tag)
 {
   std::cout << tag << ": order error" << std::endl;
 }
 
-template <typename InsertArgs>
-bool OrderServer<InsertArgs>::CheckLimits(int volume, double price)
+template <typename InsertHandler>
+bool OrderServer<InsertHandler>::CheckLimits(int volume, double price)
 {
   return volume < 1000 && price < 100;
 }
 
-template <typename InsertArgs>
-void OrderServer<InsertArgs>::VerifyCallback(int tag)
+template <typename InsertHandler>
+void OrderServer<InsertHandler>::VerifyCallback(int tag)
 {
   // we should have seen a call to the risk check, if not, bail
   if (!mOrderTagToCallbacks[tag])
     throw "Risk callback did not happen";
 }
 
-template <typename InsertArgs>
-void OrderServer<InsertArgs>::InsertOrder(int volume, double price, int tag, bool side)
+template <typename InsertHandler>
+void OrderServer<InsertHandler>::InsertOrder(int volume, double price, int tag, bool side)
 {
   // ask the module to insert the order, resulting in a risk callback
   mMarketModule.InsertOrder(volume, price, tag, side);
