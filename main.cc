@@ -10,10 +10,10 @@ int main()
   ExampleModule exampleModule;
 
   // reduce it to its base type pointer
-  auto* execModule = static_cast<IMarketModule*>(&exampleModule);
+  auto* marketModule = static_cast<IMarketModule*>(&exampleModule);
 
   // get a reference to the order server
-  auto& OrderServer = execModule->GetOrderServer();
+  auto& OrderServer = marketModule->GetOrderServer();
 
   // insert an order (just to check that we don't crash)
   OrderServer.InsertOrder(10, 12.2, 1, true);

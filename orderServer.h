@@ -21,7 +21,7 @@ private:
   // IOrderExecutor
   bool AttemptInsertOrder(const InsertArgs& args, int tag) override;
 
-  // IExecModuleOrderHandler
+  // IMarketModuleOrderHandler
   void OnOrderError(int tag) override;
 
   // IOrderServer
@@ -32,7 +32,7 @@ private:
   void VerifyCallback(int tag);
 
 public:
-  OrderServer(IMarketModule& execModule, InsertHandler handler);
+  OrderServer(IMarketModule& marketModule, InsertHandler handler);
 };
 
 // pull in the template implementation

@@ -26,10 +26,10 @@ ExampleModule::ExampleModule()
   SetupOrderHandlers(this);
 }
 
-void ExampleModule::Initialise(IMarketModuleResponseHandler* execModuleOrderHandler, IOrderExecutor* orderExecutor)
+void ExampleModule::Initialise(IMarketModuleResponseHandler* marketModuleResponseHandler, IOrderExecutor* orderExecutor)
 {
   mOrderExecutor = orderExecutor;
-  mMarketModuleResponseHandler = execModuleOrderHandler;
+  mMarketModuleResponseHandler = marketModuleResponseHandler;
 }
 
 IOrderServer& ExampleModule::GetOrderServer()

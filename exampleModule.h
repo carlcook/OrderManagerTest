@@ -17,7 +17,7 @@ private:
   IOrderExecutor* mOrderExecutor;
   IMarketModuleResponseHandler* mMarketModuleResponseHandler;
 
-  // IExecModule
+  // IMarketModule
   void Initialise(IMarketModuleResponseHandler*, IOrderExecutor*) override;
   void InsertOrder(int volume, double price, int tag, bool side) override;
   IOrderServer& GetOrderServer() override;
