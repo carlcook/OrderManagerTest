@@ -75,7 +75,7 @@ void ExampleModule::SendInsertToMarket(AccessKey, const InsertArgs& args)
   if (error)
     throw boost::system::system_error(error);
 
-  // transmit the data
+  // transmit the data (a little hacky here... we need to cast back to the subclass)
   auto extendedArgs = static_cast<const ExtendedInsertArgs&>(args);
   std::string message = extendedArgs.mMessage;
   boost::system::error_code ignored_error;
