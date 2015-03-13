@@ -12,6 +12,7 @@ TARGET = firsttest
 CONFIG   += console
 CONFIG   -= app_bundle
 CONFIG   += c++11
+INCLUDEPATH += /usr/local/boost-1.57/include
 LIBS += -lboost_system
 
 TEMPLATE = app
